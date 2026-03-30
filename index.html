@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediNav | Oncology AI Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#f8fafc] font-['Inter'] text-slate-900 overflow-x-hidden">
+
+    <div id="search-overlay" class="fixed inset-0 bg-[#181818] opacity-0 pointer-events-none transition-all duration-300 z-40"></div>
+
+    <header class="bg-white border-b border-slate-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center gap-8">
+            <div class="flex items-center gap-2 shrink-0 cursor-pointer" onclick="location.reload()">
+                <span class="material-symbols-outlined text-blue-600 text-3xl">medical_services</span>
+                <span class="font-['Manrope'] font-extrabold text-2xl text-blue-900 tracking-tight">med</span>
+            </div>
+
+            <div id="header-search-wrapper" class="flex-1 max-w-2xl relative">
+                <div class="flex items-center bg-slate-100 rounded-full border border-transparent focus-within:border-blue-500 focus-within:bg-white transition-all shadow-sm">
+                    <span class="material-symbols-outlined ml-4 text-slate-400">search</span>
+                    <input type="text" id="main-search" class="w-full py-2.5 px-3 bg-transparent border-none focus:ring-0 text-slate-700 text-sm" placeholder="Search for cancer drugs, nutrition, programs...">
+                </div>
+
+                <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 bg-white mt-3 rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[60]">
+                    <div class="p-2" id="suggestions-list">
+                        </div>
+                </div>
+            </div>
+
+            <button class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-blue-700 transition-all shadow-md active:scale-95">Log in</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10 relative">
+        
+        <section id="step-home" class="space-y-16">
+            <div class="bg-gradient-to-br from-blue-900 to-blue-700 rounded-[2.5rem] p-10 md:p-14 text-white flex flex-col md:flex-row items-center gap-12 shadow-2xl">
+                <div class="flex-1 space-y-6">
+                    <span class="bg-white/20 px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Navigator v3.0</span>
+                    <h2 class="font-['Manrope'] text-4xl md:text-5xl font-extrabold leading-tight">AI Patient Navigator</h2>
+                    <p class="text-blue-100 text-lg opacity-90">Upload medical docs to instantly find support programs and tailored care guides.</p>
+                </div>
+                <div id="drop-zone" class="w-full md:w-[400px] bg-white/10 backdrop-blur-md border-2 border-dashed border-white/30 rounded-[2.5rem] p-10 text-center hover:bg-white/20 transition-all cursor-pointer group">
+                    <input type="file" id="file-input" class="hidden" accept="image/*,.pdf">
+                    <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg">
+                        <span class="material-symbols-outlined text-blue-600 text-4xl font-light">upload_file</span>
+                    </div>
+                    <p class="font-bold text-lg text-white">Drop medical docs here</p>
+                    <p class="text-xs text-blue-200 mt-2">Support JPG, PNG, PDF</p>
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                <h3 class="font-['Manrope'] text-2xl font-extrabold flex items-center gap-3">
+                    <span class="w-8 h-1 bg-blue-600 rounded-full"></span> Recommended Articles
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="home-articles-grid">
+                    </div>
+            </div>
+        </section>
+
+        <section id="step-search-result" class="hidden space-y-8 pb-20">
+            <div class="flex flex-col gap-2">
+                <h2 class="text-3xl font-extrabold font-['Manrope']">Search Results</h2>
+                <p class="text-slate-500 text-sm">Found <span id="result-count" class="font-bold text-blue-600">0</span> results for "<span id="search-query-text" class="italic"></span>"</p>
+            </div>
+            <div class="bg-blue-50/50 border border-blue-100 rounded-[2.5rem] p-8 space-y-4">
+                <div class="flex items-center gap-2 text-blue-600 font-bold uppercase text-xs tracking-widest">
+                    <span class="material-symbols-outlined text-lg">auto_awesome</span> AI Insights
+                </div>
+                <p id="ai-summary-text" class="text-slate-700 leading-relaxed text-lg">Analyzing clinical data...</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="search-results-grid"></div>
+        </section>
+
+      <section id="step-result" class="hidden space-y-12 pb-20 animate-in">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-8">
+        <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-blue-600 bg-blue-50 p-2 rounded-xl">description</span>
+            <h2 class="text-2xl font-extrabold font-['Manrope']">Uploaded Document Analysis</h2>
+        </div>
+        <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full border border-emerald-100">
+            <span class="material-symbols-outlined text-lg">check_circle</span>
+            <span class="text-sm font-bold">Analysis Complete</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div class="lg:col-span-5">
+            <div class="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden relative">
+                <div class="bg-slate-50 px-8 py-6 border-b border-dashed border-slate-200 flex justify-between items-center">
+                    <div class="text-slate-400 font-bold text-xs uppercase tracking-widest">Medical Center Hub</div>
+                    <span class="material-symbols-outlined text-slate-300">more_vert</span>
+                </div>
+                <div class="p-8 space-y-8">
+                    <div class="space-y-1">
+                        <h4 class="font-extrabold text-xl font-['Manrope']">Oncology Department</h4>
+                        <p class="text-sm text-slate-500">Patient: John Doe • Date: March 25, 2026</p>
+                    </div>
+
+                    <div class="relative p-6 rounded-2xl border-2 border-emerald-500 bg-emerald-50/30">
+                        <span class="absolute -top-3 right-4 bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase">AI Detected</span>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Prescription:</p>
+                                <p class="text-xl font-extrabold text-slate-800">Keytruda</p>
+                                <p class="text-sm text-slate-500">200mg IV infusion</p>
+                            </div>
+                            <div class="pt-4 border-t border-emerald-100">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Indication:</p>
+                                <p class="text-md font-bold text-slate-700">Non-Small Cell Lung Cancer</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 text-sm text-slate-600">
+                        <div class="flex justify-between">
+                            <span class="opacity-60">Frequency:</span>
+                            <span class="font-bold">Every 3 weeks</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="opacity-60">Duration:</span>
+                            <span class="font-bold">As prescribed</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-8 border-t border-slate-100 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-slate-100"></div>
+                        <div>
+                            <p class="text-sm font-bold">Dr. Sarah Johnson, MD</p>
+                            <p class="text-[10px] text-slate-400">License #: 12345</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-7 space-y-6">
+            <h3 class="text-xl font-extrabold font-['Manrope'] flex items-center gap-2">
+                Personalized Recommendations
+            </h3>
+            
+            <div class="group bg-white p-1 rounded-[2rem] border-2 border-emerald-500 shadow-xl shadow-emerald-100/50 transition-all">
+                <div class="p-6 md:p-8 space-y-6">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-lg uppercase">Most Relevant</span>
+                        <span class="material-symbols-outlined text-slate-300 group-hover:text-emerald-500 transition-colors">open_in_new</span>
+                    </div>
+                    <div class="space-y-3">
+                        <h4 class="text-2xl font-extrabold text-slate-900 leading-tight">Join Keytruda Patient Assistance Program (PAP)</h4>
+                        <p class="text-slate-600 leading-relaxed">Financial assistance available for eligible patients. Learn about eligibility criteria and apply for support with medication costs.</p>
+                    </div>
+                    <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-emerald-200">
+                        Learn Eligibility & Apply
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 bg-white p-6 rounded-2xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined">menu_book</span>
+                </div>
+                <div class="flex-1">
+                    <h5 class="font-bold text-slate-800">Read Keytruda Info & Side Effects</h5>
+                    <p class="text-xs text-slate-500">Comprehensive guide about how Keytruda works</p>
+                </div>
+                <span class="material-symbols-outlined text-slate-300 text-sm">open_in_new</span>
+            </div>
+
+            <div class="flex items-center gap-4 bg-white p-6 rounded-2xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer">
+                <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined">event</span>
+                </div>
+                <div class="flex-1">
+                    <h5 class="font-bold text-slate-800">Register for Keytruda Patient Webinar</h5>
+                    <p class="text-xs text-slate-500">April 18, 2026 • 6:00 PM EST</p>
+                </div>
+                <span class="material-symbols-outlined text-slate-300 text-sm">open_in_new</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-8 pt-10">
+        <div class="space-y-1">
+            <h3 class="text-2xl font-extrabold font-['Manrope']">Personalized Content for You</h3>
+            <p class="text-slate-500 text-sm">Based on your Keytruda prescription, here are relevant articles and events</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 space-y-4 hover:shadow-lg transition-all">
+                <div class="flex justify-between items-center">
+                    <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-1 rounded">Treatment Guide</span>
+                    <span class="bg-slate-50 text-slate-400 text-[10px] font-bold px-2 py-1 rounded">For You</span>
+                </div>
+                <h4 class="font-bold text-slate-800 leading-snug">Keytruda: What You Need to Know</h4>
+                <p class="text-xs text-slate-500 line-clamp-2">Complete guide to Keytruda mechanism and benefits...</p>
+                <div class="pt-4 flex justify-between items-center text-[10px] font-bold">
+                    <span class="text-slate-400 flex items-center gap-1"><span class="material-symbols-outlined text-xs">schedule</span> 1 day ago</span>
+                    <span class="text-blue-600 flex items-center gap-1 cursor-pointer">Read more <span class="material-symbols-outlined text-xs">arrow_forward</span></span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 space-y-4 hover:shadow-lg transition-all">
+                <div class="flex justify-between items-center">
+                    <span class="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded">Patient Support</span>
+                    <span class="bg-slate-50 text-slate-400 text-[10px] font-bold px-2 py-1 rounded">For You</span>
+                </div>
+                <h4 class="font-bold text-slate-800 leading-snug">Managing Side Effects</h4>
+                <p class="text-xs text-slate-500 line-clamp-2">Practical tips for dealing with immunotherapy effects...</p>
+                <div class="pt-4 flex justify-between items-center text-[10px] font-bold">
+                    <span class="text-slate-400 flex items-center gap-1"><span class="material-symbols-outlined text-xs">schedule</span> 2 days ago</span>
+                    <span class="text-blue-600 flex items-center gap-1 cursor-pointer">Read more <span class="material-symbols-outlined text-xs">arrow_forward</span></span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 space-y-4 hover:shadow-lg transition-all">
+                <div class="flex justify-between items-center">
+                    <span class="bg-purple-50 text-purple-600 text-[10px] font-bold px-2 py-1 rounded">Event</span>
+                    <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-1 rounded">Recommended</span>
+                </div>
+                <h4 class="font-bold text-slate-800 leading-snug">Keytruda Support Webinar</h4>
+                <p class="text-xs text-slate-500 line-clamp-2">Join our monthly webinar specifically for patients...</p>
+                <div class="pt-4 flex justify-between items-center text-[10px] font-bold">
+                    <span class="text-slate-400 flex items-center gap-1"><span class="material-symbols-outlined text-xs">event</span> Apr 18, 2026</span>
+                    <span class="text-blue-600 flex items-center gap-1 cursor-pointer">Register <span class="material-symbols-outlined text-xs">arrow_forward</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+        <div id="step-loading" class="hidden fixed inset-0 z-[100] bg-blue-900/95 backdrop-blur-2xl flex items-center justify-center text-white p-6">
+            <div class="max-w-sm w-full text-center space-y-8">
+                <div class="relative w-24 h-24 mx-auto">
+                    <div class="absolute inset-0 border-4 border-white/20 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-blue-400 rounded-full border-t-transparent animate-spin"></div>
+                    <span class="material-symbols-outlined absolute inset-0 flex items-center justify-center text-4xl">psychology</span>
+                </div>
+                <div class="space-y-3">
+                    <h3 class="text-2xl font-bold font-['Manrope']">AI Processing</h3>
+                    <p id="loading-status" class="text-blue-200 text-sm italic animate-pulse">Extracting medical data...</p>
+                </div>
+                <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-blue-400 transition-all duration-300 shadow-[0_0_15px_rgba(96,165,250,0.5)]" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
